@@ -11,7 +11,7 @@ class Config:
     GEMINI_API_KEY: str = "AIzaSyATBM5NBOiJyrr8gNUbsU8H7jy37S3fEMg"  # Replace with your actual API key
     
     # WhatsApp Configuration
-    TARGET_CONTACT: str = "Uttam"  # Change this to the name of your contact
+    TARGET_CONTACT: str = "Barna Didi"  # Change this to the name of your contact
     
     # Bot Behavior Configuration
     CHAT_DURATION_MINUTES: int = 60  # How long to run the chat bot
@@ -24,15 +24,35 @@ class Config:
     # Conversation Configuration
     MAX_CONVERSATION_HISTORY: int = 15  # Maximum messages to keep in history
     RECENT_MESSAGES_CONTEXT: int = 5  # Number of recent messages for context
-    MAX_RESPONSE_LENGTH: int = 400  # Maximum AI response length
+    MAX_RESPONSE_LENGTH: int = 4096  # Maximum AI response length
+    
+    # Advanced AI Features
+    ENABLE_FUNCTION_CALLING: bool = True  # Enable function calling
+    ENABLE_WEB_SEARCH: bool = True  # Enable web search capabilities
+    ENABLE_GROUNDING: bool = True  # Enable Google Search grounding
+    
+    # Search Configuration
+    SEARCH_TIMEOUT: int = 10  # Timeout for search operations
+    MAX_SEARCH_RESULTS: int = 3  # Maximum search results to process
     
     # System Instructions
-    SYSTEM_INSTRUCTION: str = """You are a friendly WhatsApp chatbot assistant. 
-    Keep your responses conversational, brief (1-2 sentences), and natural.
-    Remember our conversation context and refer to previous messages when relevant.
-    Respond in the same language as the user (English or Bengali).
-    No emojis or special symbols - only plain text.
-    Be helpful, engaging, and maintain conversational flow."""
+    SYSTEM_INSTRUCTION: str = """You are an advanced WhatsApp chatbot assistant with access to real-time information through Google Search and function calling capabilities.
+    
+    Key capabilities:
+    - Use Google Search grounding to find current, accurate information
+    - Call functions to get time, weather, and search for specific information
+    - Provide factual, up-to-date responses based on real data
+    - Be honest when you don't know something and use your tools to find answers
+    
+    Guidelines:
+    - ALWAYS use search or functions when asked for information you don't immediately know
+    - NEVER make vague promises - actually provide the requested information
+    - If you can't find specific information, say so clearly with what you did find
+    - Keep responses conversational but informative
+    - Respond in the same language as the user (English or Bengali)
+    - No emojis or special symbols - only plain text
+    - When you find information through search or functions, present it clearly
+    - Don't say you'll "get information" - actually get it and provide it"""
     
     @classmethod
     def load_from_env(cls) -> 'Config':

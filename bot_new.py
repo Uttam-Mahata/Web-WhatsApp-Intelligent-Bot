@@ -5,7 +5,7 @@ import time
 from typing import Set, List, Optional
 from config import Config
 from models import BotStatus, BotStats, Message
-from ai_client import GeminiAIClient
+from advanced_ai_client import AdvancedGeminiAIClient
 from whatsapp_driver import WhatsAppDriver
 from conversation_manager import ConversationManager
 from message_processor import MessageProcessor
@@ -18,7 +18,7 @@ class WhatsAppGeminiBot:
         self.config.validate()
         
         # Initialize components
-        self.ai_client = GeminiAIClient(self.config)
+        self.ai_client = AdvancedGeminiAIClient(self.config)
         self.whatsapp_driver = WhatsAppDriver(self.config)
         self.conversation_manager = ConversationManager(self.config)
         self.message_processor = MessageProcessor()
