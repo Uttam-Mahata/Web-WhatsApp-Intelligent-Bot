@@ -11,7 +11,7 @@ class Config:
     GEMINI_API_KEY: str = "AIzaSyATBM5NBOiJyrr8gNUbsU8H7jy37S3fEMg"  # Replace with your actual API key
     
     # WhatsApp Configuration
-    TARGET_CONTACT: str = "Barna Didi"  # Change this to the name of your contact
+    TARGET_CONTACT: str = "Uttam"  # Change this to the name of your contact
     
     # Bot Behavior Configuration
     CHAT_DURATION_MINUTES: int = 60  # How long to run the chat bot
