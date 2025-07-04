@@ -66,7 +66,7 @@ The bot has been refactored into a modular architecture with the following compo
    pip install selenium google-generativeai pydantic
    ```
 3. Set up Chrome WebDriver
-4. Configure your Gemini API key in `config.py`
+4. Set your `GEMINI_API_KEY` environment variable (see Configuration section)
 
 ## 🎯 Usage
 
@@ -102,8 +102,23 @@ if bot.initialize():
 - `RESPONSE_DELAY`: Delay between responses
 - `CHECK_INTERVAL`: Message checking frequency
 
+### Setting the API Key
+The `GEMINI_API_KEY` must be set as an environment variable. This is the recommended and most secure way to provide your API key.
+
+**Example (Linux/macOS):**
+```bash
+export GEMINI_API_KEY="YOUR_API_KEY_HERE"
+```
+
+**Example (Windows PowerShell):**
+```powershell
+$Env:GEMINI_API_KEY="YOUR_API_KEY_HERE"
+```
+
+Replace `"YOUR_API_KEY_HERE"` with your actual Gemini API key.
+
 ### Direct Configuration
-Modify values in `config.py` for custom settings.
+Other configuration values can be modified in `config.py` if needed, but the API key must be set via environment variable.
 
 ## 🔧 Architecture Benefits
 
