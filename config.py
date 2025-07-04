@@ -8,7 +8,7 @@ class Config:
     """Configuration class for the WhatsApp bot"""
     
     # API Configuration
-    GEMINI_API_KEY: str = "AIzaSyATBM5NBOiJyrr8gNUbsU8H7jy37S3fEMg"  # Replace with your actual API key
+    GEMINI_API_KEY: str = ""  # Loaded from environment variable
     
     # WhatsApp Configuration
     TARGET_CONTACT: str = "Uttam"  # Change this to the name of your contact
@@ -58,7 +58,10 @@ class Config:
     def load_from_env(cls) -> 'Config':
         """Load configuration from environment variables"""
         config = cls()
-        config.GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', config.GEMINI_API_KEY)
+        gemini_api_key = os.getenv('GEMINI_API_KEY')
+        if not gemini_api_key:
+            raise ValueError("GEMINI_API_KEY environment variable not set.")
+        config.GEMINI_API_KEY = gemini_api_key
         config.TARGET_CONTACT = os.getenv('TARGET_CONTACT', config.TARGET_CONTACT)
         config.CHAT_DURATION_MINUTES = int(os.getenv('CHAT_DURATION_MINUTES', config.CHAT_DURATION_MINUTES))
         config.RESPONSE_DELAY = float(os.getenv('RESPONSE_DELAY', config.RESPONSE_DELAY))
@@ -67,7 +70,7 @@ class Config:
     
     def validate(self) -> bool:
         """Validate configuration settings"""
-        if not self.GEMINI_API_KEY or self.GEMINI_API_KEY == "your_api_key_here":
+        if not self.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY must be set")
         if not self.TARGET_CONTACT:
             raise ValueError("TARGET_CONTACT must be set")
