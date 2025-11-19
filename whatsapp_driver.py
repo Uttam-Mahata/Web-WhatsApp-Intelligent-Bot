@@ -28,8 +28,15 @@ class WhatsAppDriver:
         """Initialize Chrome WebDriver with WhatsApp compatibility"""
         chrome_options = Options()
         
-        
-        self.driver = webdriver.Chrome(options=chrome_options)
+        # Use webdriver-manager to handle chromedriver
+        try:
+            service = Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+        except Exception as e:
+            print(f"Failed to initialize ChromeDriver: {e}")
+            print("Please ensure you have Google Chrome installed.")
+            # Fallback to default service if manager fails
+            self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         self.wait = WebDriverWait(self.driver, self.config.WEBDRIVER_TIMEOUT)
     
