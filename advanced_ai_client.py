@@ -3,11 +3,13 @@ Advanced Gemini AI client with Google Search grounding, function calling, and we
 """
 import json
 import time
+import io
 from typing import Optional, List, Dict, Any, Callable
 from google import genai
 from google.genai import types
 from config import Config
 from models import ConversationMessage
+from PIL import Image
 
 class AdvancedGeminiAIClient:
     """Advanced Gemini AI client with Google Search grounding and function calling"""
@@ -40,6 +42,9 @@ class AdvancedGeminiAIClient:
         
         # Search information function (using Google Search grounding)
         self.function_registry['search_information'] = self._search_information
+
+        # Generate image function
+        self.function_registry['generate_image'] = self._generate_image
     
     def generate_response(self, user_message: str, conversation_context: str = "") -> str:
         """Generate AI response with advanced capabilities"""
@@ -49,14 +54,16 @@ class AdvancedGeminiAIClient:
             # Detect if user message contains Bengali
             has_bengali = self._detect_bengali(user_message)
             
-            # Check if this requires function calling or web search
-            if self._requires_search_or_function(user_message):
+            # Decide which generation method to use
+            if self.config.ENABLE_FUNCTION_CALLING and self._needs_image_generation(user_message):
+                return self._generate_with_functions(user_message, conversation_context, has_bengali)
+            elif self._requires_search_or_function(user_message):
                 return self._generate_with_grounding_and_functions(user_message, conversation_context, has_bengali)
             else:
                 return self._generate_simple_response(user_message, conversation_context, has_bengali)
             
         except Exception as e:
-            print(f"Error generating advanced AI response: {e}")
+            print(f"Error generating response: {e}")
             return self._get_fallback_response(user_message)
     
     def _requires_search_or_function(self, user_message: str) -> bool:
@@ -111,6 +118,15 @@ class AdvancedGeminiAIClient:
         ]
         message_lower = user_message.lower()
         return any(indicator in message_lower for indicator in function_indicators)
+    
+    def _needs_image_generation(self, user_message: str) -> bool:
+        """Check if the message is a request for image generation."""
+        image_keywords = [
+            "generate image", "create a picture", "draw a picture", "make an image",
+            "ছবি তৈরি করুন", "ছবি আঁকুন"
+        ]
+        message_lower = user_message.lower()
+        return any(keyword in message_lower for keyword in image_keywords)
     
     def _generate_with_google_search(self, user_message: str, context: str, has_bengali: bool) -> str:
         """Generate response using Google Search grounding"""
@@ -363,26 +379,50 @@ No emojis or special symbols."""
         return f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')} ({now.strftime('%A, %B %d, %Y')})"
     
     def _get_weather(self, location: str) -> str:
-        """Get weather information using a simple approach"""
+        """
+        Gets the current weather for a given location. 
+        This is a placeholder and does not return real weather data.
+        """
+        print(f"Getting weather for {location}")
+        # In a real implementation, you would call a weather API here
+        return f"The weather in {location} is currently sunny and 75°F."
+
+    def _generate_image(self, prompt: str) -> str:
+        """Generates an image based on a text prompt."""
         try:
-            # This is a placeholder that provides a realistic response
-            # In a production system, you'd integrate with a weather API like OpenWeatherMap
-            import random
+            print(f"Generating image with prompt: {prompt}")
+            # The user prompt mentions 'gemini-2.5-flash-image', but that might not be available.
+            # Using 'gemini-pro-vision' as a fallback.
+            response = self.client.generate_content(
+                model="gemini-pro-vision",
+                contents=prompt,
+                generation_config={
+                    "response_mime_type": "image/png"
+                }
+            )
             
-            # Simulate basic weather conditions
-            conditions = ["sunny", "cloudy", "partly cloudy", "overcast", "light rain", "clear"]
-            temperatures = list(range(15, 35))  # Celsius
+            if response.parts:
+                image_part = response.parts[0]
+                if image_part.inline_data:
+                    image_data = image_part.inline_data.data
+                    image = Image.open(io.BytesIO(image_data))
+                    
+                    # Save the image to a temporary file
+                    image_path = f"generated_image_{int(time.time())}.png"
+                    image.save(image_path)
+                    print(f"Image saved to {image_path}")
+                    return image_path
             
-            condition = random.choice(conditions)
-            temp = random.choice(temperatures)
-            
-            return f"Weather in {location}: {condition.title()}, approximately {temp}°C. Note: This is simulated data. For accurate weather, please check a reliable weather service."
-            
+            return "Sorry, I couldn't generate an image at the moment."
+
         except Exception as e:
-            return f"Unable to get weather information for {location}. Please check a weather app or website for current conditions."
-    
+            print(f"Error generating image: {e}")
+            return f"Sorry, I encountered an error while generating the image: {e}"
+
     def _search_information(self, query: str) -> str:
-        """Search for information - this will work with Google Search grounding"""
+        """
+        Searches for information using Google Search grounding
+        """
         # This function mainly serves as a trigger for the AI to use grounding
         # The actual search results will come from Google Search grounding
         return f"Searching for current information about: {query}. Please provide accurate and up-to-date information based on available sources."

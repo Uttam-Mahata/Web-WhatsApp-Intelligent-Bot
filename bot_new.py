@@ -2,6 +2,7 @@
 Main WhatsApp Gemini AI Bot orchestrator
 """
 import time
+import os
 from typing import Set, List, Optional
 from config import Config
 from models import BotStatus, BotStats, Message
@@ -169,26 +170,41 @@ class WhatsAppGeminiBot:
                 # Add AI response to conversation
                 self.conversation_manager.add_message(response, role="assistant")
             
-            # Clean and validate response
-            clean_response = self.message_processor.validate_response(
-                response, self.config.MAX_RESPONSE_LENGTH
-            )
-            
-            if clean_response:
-                # Wait before responding
+            # Check if the response is an image path
+            if response.endswith(".png") and os.path.exists(response):
                 time.sleep(self.config.RESPONSE_DELAY)
-                
-                # Send response
-                if self.whatsapp_driver.send_message(clean_response):
-                    self.processed_messages.add(clean_response)
+                if self.whatsapp_driver.send_image(response):
                     self.stats.total_messages_sent += 1
-                    print(f"✓ Responded to: {self.message_processor.truncate_message(message.text)}")
+                    print(f"✓ Sent image in response to: {self.message_processor.truncate_message(message.text)}")
+                    try:
+                        os.remove(response) # Clean up the image file
+                        print(f"Cleaned up image file: {response}")
+                    except Exception as e:
+                        print(f"Error cleaning up image file: {e}")
                 else:
-                    print("✗ Failed to send response")
+                    print("✗ Failed to send image response")
                     self.stats.total_errors += 1
             else:
-                print("✗ Generated response was invalid or empty")
-                self.stats.total_errors += 1
+                # Clean and validate text response
+                clean_response = self.message_processor.validate_response(
+                    response, self.config.MAX_RESPONSE_LENGTH
+                )
+                
+                if clean_response:
+                    # Wait before responding
+                    time.sleep(self.config.RESPONSE_DELAY)
+                    
+                    # Send response
+                    if self.whatsapp_driver.send_message(clean_response):
+                        self.processed_messages.add(clean_response)
+                        self.stats.total_messages_sent += 1
+                        print(f"✓ Responded to: {self.message_processor.truncate_message(message.text)}")
+                    else:
+                        print("✗ Failed to send response")
+                        self.stats.total_errors += 1
+                else:
+                    print("✗ Generated response was invalid or empty")
+                    self.stats.total_errors += 1
             
             # Update last activity
             self.status.last_activity = time.time()

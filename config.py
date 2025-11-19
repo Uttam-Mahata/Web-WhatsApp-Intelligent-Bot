@@ -3,12 +3,14 @@ Configuration settings for WhatsApp Gemini AI Bot
 """
 import os
 from typing import Optional
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config:
     """Configuration class for the WhatsApp bot"""
     
     # API Configuration
-    GEMINI_API_KEY: str = ""  # Loaded from environment variable
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")  # Loaded from environment variable
     
     # WhatsApp Configuration
     TARGET_CONTACT: str = "Uttam"  # Change this to the name of your contact

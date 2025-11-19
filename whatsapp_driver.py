@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from typing import List, Optional
 import time
+import os
 from config import Config
 from models import Message
 
@@ -144,6 +145,44 @@ class WhatsAppDriver:
                     return True
             except:
                 pass
+            return False
+
+    def send_image(self, image_path: str) -> bool:
+        """Send an image in the current chat."""
+        try:
+            if not os.path.isabs(image_path):
+                image_path = os.path.abspath(image_path)
+
+            if not os.path.exists(image_path):
+                print(f"Image path does not exist: {image_path}")
+                return False
+
+            # 1. Click the attach button
+            attach_btn = self.wait.until(ec.element_to_be_clickable(
+                (By.XPATH, '//div[@title="Attach"] | //span[@data-icon="attach-menu-plus"]')
+            ))
+            attach_btn.click()
+
+            # 2. Find the image input
+            image_input = self.wait.until(ec.presence_of_element_located(
+                (By.XPATH, '//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime"]')
+            ))
+            
+            # 3. Send the image path to the input
+            image_input.send_keys(image_path)
+            
+            # 4. Wait for the send button to be clickable and click it
+            send_button = self.wait.until(ec.element_to_be_clickable(
+                (By.XPATH, '//span[@data-icon="send"] | //div[@aria-label="Send"]')
+            ))
+            send_button.click()
+            
+            print(f"Sent image: {image_path}")
+            time.sleep(2)  # Wait for image to send
+            return True
+
+        except Exception as e:
+            print(f"Error sending image: {e}")
             return False
     
     def get_latest_messages(self) -> List[Message]:
