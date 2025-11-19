@@ -1,36 +1,36 @@
-annotated-types
-anyio
-attrs
-cachetools
-certifi
-charset-normalizer
-google-auth
-google-genai
-greenlet
-h11
-httpcore
-httpx
-idna
-outcome
-playwright
-pyasn1
-pyasn1_modules
-pydantic
-pydantic_core
-pyee
-PySocks
-requests
-rsa
-selenium
-webdriver-manager
-sniffio
-sortedcontainers
-trio
-trio-websocket
-typing-inspection
-typing_extensions
-urllib3
-websocket-client
-websockets
-wsproto
-python-dotenv
+# Production Dependencies for WhatsApp AI Bot v2.0
+# Python 3.11+ required
+
+# Core Dependencies
+python-dotenv==1.0.1
+pydantic==2.10.6
+pydantic-settings==2.7.1
+
+# Google Gemini AI
+google-genai==0.2.2
+
+# HTTP Client for WhatsApp Business API
+httpx==0.28.2
+
+# FastAPI and Web Server
+fastapi==0.115.0
+uvicorn[standard]==0.34.0
+
+# Image Processing
+Pillow==11.0.0
+
+# Utilities
+python-multipart==0.0.20
+
+# Optional: Redis for production scaling
+# redis==5.2.0
+
+# Optional: Database for persistent storage
+# sqlalchemy==2.0.36
+# psycopg2-binary==2.9.10
+
+# Optional: Monitoring and error tracking
+# sentry-sdk==2.20.0
+# prometheus-client==0.21.1
+
+# Development Dependencies (separate file: requirements-dev.txt)
