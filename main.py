@@ -1,76 +1,72 @@
 """
-Main entry point for WhatsApp Gemini AI Bot
+WhatsApp AI Bot - Production Entry Point
+
+Starts the FastAPI webhook server for WhatsApp Business API integration.
 """
+
 import sys
-import os
+import logging
 from pathlib import Path
 
-# Add the current directory to Python path for imports
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
+# Add project root to path
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 
-from config import Config
-from bot_new import WhatsAppGeminiBot
+
+def setup_logging():
+    """Configure logging for the application"""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+
 
 def main():
-    """Main function to run the WhatsApp bot"""
-    bot = None
-    
+    """Main entry point"""
+    import uvicorn
+    from src.config import get_config
+
+    # Setup logging
+    setup_logging()
+    logger = logging.getLogger(__name__)
+
     try:
-        print("="*60)
-        print("WhatsApp Gemini AI Bot - Modular Version")
-        print("="*60)
-        
-        # Load configuration
-        config = Config.load_from_env()
-        print(f"Target Contact: {config.TARGET_CONTACT}")
-        print(f"Chat Duration: {config.CHAT_DURATION_MINUTES} minutes")
-        print(f"Response Delay: {config.RESPONSE_DELAY} seconds")
-        
-        # Initialize bot
-        bot = WhatsAppGeminiBot(config)
-        
-        # Initialize WhatsApp connection
-        if not bot.initialize():
-            print("Failed to initialize bot. Exiting...")
-            return
-        
-        # Start chat session
-        bot.start_chat_session()
-        
-        # Show final statistics
-        print("\n" + "="*50)
-        print("SESSION SUMMARY")
-        print("="*50)
-        stats = bot.get_stats()
-        print(f"Session Duration: {stats.session_duration:.1f} seconds")
-        print(f"Messages Received: {stats.total_messages_received}")
-        print(f"Messages Sent: {stats.total_messages_sent}")
-        print(f"Total Errors: {stats.total_errors}")
-        
-        # Show conversation history
-        bot.show_conversation_history()
-        
-    except KeyboardInterrupt:
-        print("\n\nBot interrupted by user")
+        # Load configuration to validate before starting
+        config = get_config()
+
+        logger.info("=" * 60)
+        logger.info("WhatsApp AI Bot - Production v2.0")
+        logger.info("Powered by WhatsApp Business API + Gemini AI")
+        logger.info("=" * 60)
+        logger.info(f"Environment: {config.environment}")
+        logger.info(f"Webhook: {config.webhook.host}:{config.webhook.port}{config.webhook.path}")
+        logger.info(f"AI Model: {config.gemini.model_name}")
+        logger.info(f"Image Generation: {'Enabled' if config.gemini.enable_image_generation else 'Disabled'}")
+        logger.info(f"Google Search: {'Enabled' if config.gemini.enable_google_search else 'Disabled'}")
+        logger.info("=" * 60)
+
+        # Start FastAPI server
+        uvicorn.run(
+            "src.webhook.server:app",
+            host=config.webhook.host,
+            port=config.webhook.port,
+            workers=config.webhook.workers if not config.debug else 1,
+            reload=config.debug,
+            log_level=config.logging.log_level.lower(),
+            access_log=config.logging.enable_access_logs,
+        )
+
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        logger.error("\nPlease check your .env file and ensure all required fields are set.")
+        logger.error("See .env.example for reference.")
+        sys.exit(1)
+
     except Exception as e:
-        print(f"Fatal error: {e}")
-        print(f"Error type: {type(e).__name__}")
-        print("\nMake sure you:")
-        print("1. Have set your GEMINI_API_KEY correctly")
-        print("2. Scanned the QR code properly")
-        print("3. Have a stable internet connection")
-        print("4. The contact name is spelled correctly")
-        print("5. Chrome browser is installed and updated")
-        
-    finally:
-        if bot:
-            try:
-                bot.cleanup()
-            except Exception as cleanup_error:
-                print(f"Error during cleanup: {cleanup_error}")
-        
-        print("\nBot session ended. Thank you for using WhatsApp Gemini AI Bot!")
+        logger.error(f"Fatal error: {e}", exc_info=True)
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
